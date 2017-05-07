@@ -1,0 +1,29 @@
+body {
+  font-family: sans-serif;
+}
+
+.success {
+  background: #9CD8A7;
+  padding: 10px;
+}
+
+.error {
+  background: #E88CB0;
+  padding: 10px;
+}
+
+
+table {
+  width: 400px;
+}
+
+th, td {
+  padding: 7px, 10px, 10px, 10px;
+}
+
+th {
+  border-bottom: 2px solid #111111;
+  border-top: 1px solid #999;
+  text-align: left;
+}
+

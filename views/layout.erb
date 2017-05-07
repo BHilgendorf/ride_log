@@ -1,0 +1,17 @@
+<html>
+  <title>Ride Log</title>
+  <link rel="stylesheet" href="/stylesheets/ride.css" type="text/css"/>
+
+  <body>
+    <% if session[:success] %>
+      <p class = "success"><%= session.delete(:success) %></p> 
+    <% end %>
+
+    <% if session[:error] %>
+      <p class="error"><%= session.delete(:error) %></p>
+    <% end %>
+
+    <%== yield %>
+  </body>
+</html>
+

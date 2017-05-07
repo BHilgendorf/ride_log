@@ -1,0 +1,19 @@
+<h2>Ride History</h2>
+<table>
+  <tr>
+    <th>Date</th>
+    <th>Distance</th>
+    <th>Duration</th>
+  </tr>
+  <% @rides.each do | _, data| %>
+    <tr>
+      <td><%= data[:date] %></td>
+      <td><%= data[:distance] %></td>
+      <td><%= data[:duration] %></td>
+    </tr>
+  <% end %>
+</table>
+
+<div>
+  <a href="/rides/add">Add New Ride</a>
+</div>
