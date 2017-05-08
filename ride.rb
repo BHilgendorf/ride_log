@@ -10,40 +10,44 @@ configure do
 end
 
 # Distance Validation --------------------
-def distance_is_number?(distance)
-  distance.match(/[0-9\.]/)
-end
-
-def invalid_distance_entry?(distance)
-  !distance_is_number?(distance)
-end
-
-def distance_empty?(distance)
-  distance.nil? || distance == ""
+def invalid_distance_characters?(distance)
+  distance.match(/[^0-9\.]/)
 end
 
 def set_distance(distance)
-  if distance == ""
-    "0"
-  elsif distance.nil?
+  if distance == "" || distance.nil?
     "0"
   else
     distance
   end
 end
 
+
 # Duration Validation ------------------
-def valid_duration?(duration)
-  duration.match(/\d{0,2}:\d{2}/)
+def invalid_duration_format?(duration)
+  !duration.match(/\d+:[0-5][0-9]/)
 end
 
 def set_duration(duration)
-  if duration == ""
-    "00:00"
-  elsif duration.nil?
+  if duration == "" || duration.nil?
     "00:00"
   else
     duration
+  end
+end
+
+# Form Entry Validation ----------------------
+def empty_distance_and_duration?(distance, duration)
+  duration == "00:00" && distance == "0"
+end
+
+def invalid_form_entry?(distance, duration)
+  if empty_distance_and_duration?(distance, duration)
+    "You must enter a distance or a duration."
+  elsif invalid_distance_characters?(distance)
+    "Distance must be numeric. A decimal point is allowed."
+  elsif invalid_duration_format?(duration)
+    "Please enter ride time in HH:MM format."
   end
 end
 
@@ -72,13 +76,12 @@ post "/rides/add" do
   date = params[:date]
   distance = set_distance(params[:distance])
   duration = set_duration(params[:duration])
- 
 
-  if invalid_distance_entry?(distance)
+  error_message = invalid_form_entry?(distance, duration)
+  if error_message
     status 422
-    session[:error] = "Distance must be numeric. A decimal point is allowed."
+    session[:error] = error_message
     erb :add_ride
-  
   else
     ride_id = next_ride_id(session[:rides])
     session[:rides][ride_id] = {date: date, distance: distance, duration: duration}
@@ -87,4 +90,5 @@ post "/rides/add" do
   end
 
 end
+
 

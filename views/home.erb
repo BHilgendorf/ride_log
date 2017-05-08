@@ -5,13 +5,22 @@
     <th>Distance</th>
     <th>Duration</th>
   </tr>
-  <% @rides.each do | _, data| %>
+  <% @rides.each do | ride_id, data| %>
     <tr>
       <td><%= data[:date] %></td>
       <td><%= data[:distance] %></td>
       <td><%= data[:duration] %></td>
+      <td><a href="/rides/edit/<%= ride_id %>">Edit</a></td>
+      <td><a href="/rides/delete/<%= ride_id %>">Delete</a></td>
     </tr>
   <% end %>
+  <tfoot>
+    <tr>
+      <td>Totals</td>
+      <td>Total Miles</td>
+      <td>Total Duration</td>
+    </tr>
+  </tfoot>
 </table>
 
 <div>
