@@ -22,7 +22,6 @@ def set_distance(distance)
   end
 end
 
-
 # Duration Validation ------------------
 def invalid_duration_format?(duration)
   !duration.match(/\d+:[0-5][0-9]/)
@@ -57,13 +56,14 @@ def next_ride_id(rides)
   (current + 1).to_s
 end
 
+# Helpers ------------------------------
+
 before do
   session[:rides] ||= {}
-end 
+end
 
 # --------------------------------------
 get "/home" do
-
   @rides = session[:rides]
   erb :home
 end
@@ -84,11 +84,25 @@ post "/rides/add" do
     erb :add_ride
   else
     ride_id = next_ride_id(session[:rides])
-    session[:rides][ride_id] = {date: date, distance: distance, duration: duration}
+    session[:rides][ride_id] = {
+      date: date, distance: distance, duration: duration
+    }
     session[:success] = "Ride has been added successfully."
     redirect "/home"
   end
+end
 
+# Delete Ride ------------------------------------
+
+post "/rides/delete/:id" do
+  id = params[:id]
+  if session[:rides][id]
+    session[:rides].delete(id)
+    session[:success] = "Ride has been deleted."
+  else
+    session[:error] = "Ride with id of #{id} does not exist."
+  end
+  redirect "/home"
 end
 
 

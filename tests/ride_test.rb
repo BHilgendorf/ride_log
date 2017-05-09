@@ -16,6 +16,10 @@ class RideTest < Minitest::Test
     last_request.env["rack.session"]
   end
 
+  def sample_ride
+    {"rack.session" => {rides: {"555" => {date: "2000-01-01", distance: "20"}}}}
+  end
+
 
 # Test Home page --------------------------------
   def test_home_page
@@ -26,7 +30,7 @@ class RideTest < Minitest::Test
   end
 
 # Test distance entry-----------------------
-  def test_invalid_character_for_distnace
+  def test_invalid_character_for_distance
     post "/rides/add", {distance: "invalid"}
 
     assert_equal(422, last_response.status)
@@ -54,6 +58,8 @@ class RideTest < Minitest::Test
 
     get "/home"
     assert_includes(last_response.body, "<h2>Ride History</h2>")
+    assert_includes(last_response.body, "100.5")
+    assert_includes(last_response.body, "2000-01-01")
   end
 
 
@@ -71,7 +77,7 @@ class RideTest < Minitest::Test
 
   def test_invalid_duration_format_2
     post "/rides/add", {date: "2001-05-05", duration: "3:87"}
-    
+
     assert_equal(422, last_response.status)
     error_message = "Please enter ride time in HH:MM format."
     assert_includes(last_response.body, error_message)
@@ -91,6 +97,8 @@ class RideTest < Minitest::Test
     get "/home"
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, "<h2>Ride History</h2>")
+    assert_includes(last_response.body, "2001-05-05")
+    assert_includes(last_response.body, "2:15")
   end
 
   def test_valid_duration_format_2
@@ -103,6 +111,7 @@ class RideTest < Minitest::Test
     get "/home"
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, "<h2>Ride History</h2>")
+    assert_includes(last_response.body, "12:30")
   end
 
 
@@ -117,5 +126,33 @@ class RideTest < Minitest::Test
     get "/home"
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, "<h2>Ride History</h2>")
+    refute_includes(last_response.body, "0")
+    refute_includes(last_response.body, "00:00")
+  end
+
+  # Test Deleting Rides -------------------------------------
+  def test_delete_invalid_id
+    post "/rides/delete/4251"
+
+    assert_equal(302, last_response.status)
+    assert_equal("Ride with id of 4251 does not exist.", session[:error])
+  end
+
+  def test_delete_successful
+    post "/rides/delete/555", {}, sample_ride
+
+    assert_equal(302, last_response.status)
+    success_message = "Ride has been deleted."
+    assert_equal(success_message, session[:success])
+    refute_equal(sample_ride, session[:rides])
   end
 end
+
+
+
+
+
+
+
+
+

@@ -4,14 +4,27 @@
     <th>Date</th>
     <th>Distance</th>
     <th>Duration</th>
+    <th>Category</th>
+    <th></th>
+    <th></th>
+
   </tr>
   <% @rides.each do | ride_id, data| %>
     <tr>
       <td><%= data[:date] %></td>
       <td><%= data[:distance] %></td>
       <td><%= data[:duration] %></td>
-      <td><a href="/rides/edit/<%= ride_id %>">Edit</a></td>
-      <td><a href="/rides/delete/<%= ride_id %>">Delete</a></td>
+      <td></td>
+      <td>
+        <form action="/rides/edit/<%= ride_id %>" method="get">
+          <button type="submit">Edit</button>
+        </form>
+      </td>
+      <td>
+        <form action="/rides/delete/<%= ride_id %>" method="post">
+          <button type="submit">Delete</button>
+        </form>
+      </td>
     </tr>
   <% end %>
   <tfoot>
