@@ -1,0 +1,14 @@
+<form action="/rides/edit/<%= @ride_id %>" method="post">
+  <p>Date
+    <input type="date" name="date" required="required" value="<%= @date %>">
+  </p>
+  <p> Ride Distance (in Miles)
+    <input type="text" name="distance" value="<%= @distance %>"/>
+  </p>
+  <p> Ride Duration (HH:MM format)
+    <input type="text" name="duration" value="<%= @duration %>"/>
+  </p>
+  <input type="submit" value="Save Ride" />
+</form>
+
+<a href="/home">Home</a>

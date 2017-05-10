@@ -9,6 +9,18 @@ configure do
   set :erb, escape_html: true
 end
 
+helpers do
+  def total_miles(rides)
+    miles = rides.map { |_, data| data[:distance].to_f }.reduce(:+).to_s
+    # "#{'%.2f' % miles}"
+  end
+
+  def total_duration(rides)
+    time = rides.map { |_, data| data[:duration].to_f }.reduce(:+).to_s
+    # "#{'%.2f' % time}"
+  end
+end
+
 # Distance Validation --------------------
 def invalid_distance_characters?(distance)
   distance.match(/[^0-9\.]/)
@@ -56,6 +68,10 @@ def next_ride_id(rides)
   (current + 1).to_s
 end
 
+def valid_ride_id?(rides)
+  rides.keys.include?(params[:id])
+end
+
 # Helpers ------------------------------
 
 before do
@@ -92,15 +108,50 @@ post "/rides/add" do
   end
 end
 
+# Edit Ride ------------------------------------
+get "/rides/edit/:id" do
+  @ride_id = params[:id]
+  if valid_ride_id?(session[:rides])
+    
+    @date = session[:rides][@ride_id][:date]
+    @distance = session[:rides][@ride_id][:distance]
+    @duration = session[:rides][@ride_id][:duration]
+    erb :edit_ride
+  else
+    session[:error] = "Ride with id of #{@ride_id} does not exist."
+    redirect "/home"
+  end
+end
+
+post "/rides/edit/:id" do
+  ride_id = params[:id]
+  distance = set_distance(params[:distance])
+  duration = set_duration(params[:duration])
+
+  error_message = invalid_form_entry?(distance, duration)
+  if error_message
+    status 422
+    session[:error] = error_message
+    redirect "/rides/edit/#{ride_id}"
+  else
+    session[:rides][ride_id][:date] = params[:date]
+    session[:rides][ride_id][:distance] = distance
+    session[:rides][ride_id][:duration] = duration
+
+    session[:success] = "Ride has been updated."
+    redirect "/home"
+  end
+end
+
 # Delete Ride ------------------------------------
 
 post "/rides/delete/:id" do
-  id = params[:id]
-  if session[:rides][id]
-    session[:rides].delete(id)
+  ride_id = params[:id]
+  if session[:rides][ride_id]
+    session[:rides].delete(ride_id)
     session[:success] = "Ride has been deleted."
   else
-    session[:error] = "Ride with id of #{id} does not exist."
+    session[:error] = "Ride with id of #{ride_id} does not exist."
   end
   redirect "/home"
 end

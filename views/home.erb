@@ -30,12 +30,12 @@
   <tfoot>
     <tr>
       <td>Totals</td>
-      <td>Total Miles</td>
-      <td>Total Duration</td>
+      <td><%= total_miles(@rides) %></td>
+      <td><%= total_duration(@rides) %></td>
     </tr>
   </tfoot>
 </table>
 
-<div>
+<div class="add">
   <a href="/rides/add">Add New Ride</a>
 </div>
