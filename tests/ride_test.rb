@@ -114,6 +114,19 @@ class RideTest < Minitest::Test
     assert_includes(last_response.body, "12:30")
   end
 
+  def test_valid_category_entry
+    post "/rides/add", {date: "2017-07-28", duration: "4:00", category: "Road"}
+
+    assert_equal(302, last_response.status)
+    success_message = "Ride has been added successfully."
+    assert_equal(success_message, session[:success])
+
+    get "/home"
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body,  "2017-07-28")
+    assert_includes(last_response.body, "Road")
+  end
+
 
   # Test empty distance and duration -------------------------------
   def test_empty_distance_and_duration
@@ -140,64 +153,104 @@ class RideTest < Minitest::Test
   end
 
   def test_get_edit_valid_ride_id
-    post "/rides/add", {}, sample_ride
+    post "/rides/add", {date: "2001-01-01", distance: "20", duration: "02:00"}
 
-    get "/rides/edit/555"
+    get "/rides/edit/1"
     assert_equal(200, last_response.status)
-    assert_includes(last_response.body, "2000-01-01")
+    assert_includes(last_response.body, "2001-01-01")
     assert_includes(last_response.body, "20")
   end
 
-  def test_post_edit_with_empty_distance_valid_duration
-    post "/rides/add/555", {}, sample_ride
+  def test_post_invalid_distance
+    post "/rides/add", {date: "2001-01-01", distance: "45", duration: "02:00"}
 
-    post "/rides/edit/555", {date: "2001-01-01", distance: "", duration: "03:12"}
-    assert_equal("0", session[:rides]["555"][:distance])
-    assert_equal("03:12", session[:rides]["555"][:duration])
+    assert_equal(302, last_response.status)
+    assert_equal("45", session[:rides]["1"][:distance])
+    assert_equal("02:00", session[:rides]["1"][:duration])
+
+    post "/rides/edit/1", {date: "2001-01-01", distance: "<junk>", duration: "02:00"}
+    assert_equal(302, last_response.status)
+    error_message = "Distance must be numeric. A decimal point is allowed."
+    assert_equal(error_message, session[:error])
+  end
+
+  def test_post_invalid_duration
+    post "/rides/add", {date: "2001-01-01", distance: "45", duration: "02:00"}
+
+    assert_equal(302, last_response.status)
+    assert_equal("45", session[:rides]["1"][:distance])
+    assert_equal("02:00", session[:rides]["1"][:duration])
+
+    post "/rides/edit/1", {date: "2001-01-01", distance: "45", duration: "<junk>"}
+    assert_equal(302, last_response.status)
+    error_message = "Please enter ride time in HH:MM format."
+    assert_equal(error_message, session[:error])
+
+  end
+
+  def test_post_edit_duration_and_distance
+    post "/rides/add", {date: "2001-01-01", distance: "45", duration: "02:00"}
+
+    assert_equal(302, last_response.status)
+    assert_equal("45", session[:rides]["1"][:distance])
+    assert_equal("02:00", session[:rides]["1"][:duration])
+
+    post "/rides/edit/1", {date: "2001-01-01", distance: "50", duration: "03:00"}
+    assert_equal("50", session[:rides]["1"][:distance])
+    assert_equal("03:00", session[:rides]["1"][:duration])
     assert_equal(302, last_response.status)
     assert_equal("Ride has been updated.", session[:success])
 
     get "/home"
     assert_equal(200, last_response.status)
-    assert_includes(last_response.body, "0")
-    assert_includes(last_response.body, "03:12")
+    assert_includes(last_response.body, "50")
+    assert_includes(last_response.body, "03:00")
   end
 
-  def test_post_edit_empty_duration_valid_distance
-    post "/rides/add/555", {}, sample_ride
+  def test_post_edit_distance
+    post "/rides/add", {date: "2001-01-01", distance: "", duration: "02:00"}
 
-    post "/rides/edit/555", {date: "2001-01-01", distance: "8", duration: ""}
-    assert_equal("8", session[:rides]["555"][:distance])
-    assert_equal("00:00", session[:rides]["555"][:duration])
+    assert_equal(302, last_response.status)
+    assert_equal("0", session[:rides]["1"][:distance])
+
+    post "/rides/edit/1", {date: "2001-01-01", distance: "30", duration: "02:00"}
+    assert_equal("30", session[:rides]["1"][:distance])
+    assert_equal("02:00", session[:rides]["1"][:duration])
     assert_equal(302, last_response.status)
     assert_equal("Ride has been updated.", session[:success])
 
     get "/home"
     assert_equal(200, last_response.status)
-    assert_includes(last_response.body, "8")
-    assert_includes(last_response.body, "00:00")
+    assert_includes(last_response.body, "30")
+    assert_includes(last_response.body, "02:00")
   end
 
-  def test_post_edit_valid_distance_empty_duration
-    post "/rides/add/555", {}, sample_ride
+  def test_post_edit_duration
+    post "/rides/add", {date: "2001-01-01", distance: "44", duration: ""}
 
-    post "/rides/edit/555",{date: "2001-01-01", distance: "26.20", duration: "02:12"}
-    assert_equal("26.20", session[:rides]["555"][:distance])
-    assert_equal("02:12", session[:rides]["555"][:duration])
+    assert_equal(302, last_response.status)
+    assert_equal("00:00", session[:rides]["1"][:duration])
+
+    post "/rides/edit/1",{date: "2001-01-01", distance: "44", duration: "02:12"}
+    assert_equal("44", session[:rides]["1"][:distance])
+    assert_equal("02:12", session[:rides]["1"][:duration])
     assert_equal("Ride has been updated.", session[:success])
 
     get "/home"
     assert_equal(200, last_response.status)
-    assert_includes(last_response.body, "26.20")
+    assert_includes(last_response.body, "44")
     assert_includes(last_response.body, "02:12")
   end
 
   def test_post_edit_valid_distance_and_duration
-    post "/rides/add/555", {}, sample_ride
+    post "/rides/add", {date: "2001-01-01", distance: "44", duration: "02:45"}
 
-    post "/rides/edit/555", {date: "2001-01-01", distance: "44", duration: "02:45"}
-    assert_equal("44", session[:rides]["555"][:distance])
-    assert_equal("02:45", session[:rides]["555"][:duration])
+    assert_equal(302, last_response.status)
+    assert_equal("02:45", session[:rides]["1"][:duration])
+
+    post "/rides/edit/1", {date: "2001-01-01", distance: "44", duration: "02:45"}
+    assert_equal("44", session[:rides]["1"][:distance])
+    assert_equal("02:45", session[:rides]["1"][:duration])
     assert_equal(302, last_response.status)
     assert_equal("Ride has been updated.", session[:success])
 
@@ -205,6 +258,25 @@ class RideTest < Minitest::Test
     assert_equal(200, last_response.status)
     assert_includes(last_response.body, "44")
     assert_includes(last_response.body, "02:45")
+  end
+
+  def test_post_edit_category
+    post "/rides/add", {date: "2001-01-01", distance: "44", duration: "02:45", category: "Road"}
+
+    assert_equal(302, last_response.status)
+    assert_equal("Road", session[:rides]["1"][:category])
+
+    edited_data = {date: "2001-01-04", distance: "20", duration: "01:00", category: "Cross"}
+    post "/rides/edit/1", edited_data
+    assert_equal(302, last_response.status)
+    assert_equal("Cross", session[:rides]["1"][:category])
+    assert_equal("2001-01-04", session[:rides]["1"][:date])
+
+    get "/home"
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, "Cross")
+    assert_includes(last_response.body, "2001-01-04")
+
   end
 
   # Test Deleting Rides -------------------------------------

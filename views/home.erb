@@ -14,7 +14,7 @@
       <td><%= data[:date] %></td>
       <td><%= data[:distance] %></td>
       <td><%= data[:duration] %></td>
-      <td></td>
+      <td><%= data[:category] %></td>
       <td>
         <form action="/rides/edit/<%= ride_id %>" method="get">
           <button type="submit">Edit</button>

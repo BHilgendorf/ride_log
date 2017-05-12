@@ -92,6 +92,7 @@ post "/rides/add" do
   date = params[:date]
   distance = set_distance(params[:distance])
   duration = set_duration(params[:duration])
+  category = params[:category]
 
   error_message = invalid_form_entry?(distance, duration)
   if error_message
@@ -101,7 +102,7 @@ post "/rides/add" do
   else
     ride_id = next_ride_id(session[:rides])
     session[:rides][ride_id] = {
-      date: date, distance: distance, duration: duration
+      date: date, distance: distance, duration: duration, category: category
     }
     session[:success] = "Ride has been added successfully."
     redirect "/home"
@@ -127,6 +128,7 @@ post "/rides/edit/:id" do
   ride_id = params[:id]
   distance = set_distance(params[:distance])
   duration = set_duration(params[:duration])
+  category = params[:category]
 
   error_message = invalid_form_entry?(distance, duration)
   if error_message
@@ -137,6 +139,7 @@ post "/rides/edit/:id" do
     session[:rides][ride_id][:date] = params[:date]
     session[:rides][ride_id][:distance] = distance
     session[:rides][ride_id][:duration] = duration
+    session[:rides][ride_id][:category] = params[:category]
 
     session[:success] = "Ride has been updated."
     redirect "/home"
